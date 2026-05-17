@@ -1,17 +1,34 @@
 // app/components/Button.tsx
 import React from 'react';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+type BaseProps = {
   variant?: 'primary' | 'secondary';
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
-}
+  className?: string;
+  href?: string;           // if provided, renders as <a>
+  style?: React.CSSProperties;
+};
+
+type ButtonAsButton = BaseProps &
+  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof BaseProps> & {
+    href?: undefined;
+  };
+
+type ButtonAsAnchor = BaseProps &
+  Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof BaseProps> & {
+    href: string;
+  };
+
+type ButtonProps = ButtonAsButton | ButtonAsAnchor;
 
 export const Button = ({
   variant = 'primary',
   size = 'md',
   children,
   className = '',
+  href,
+  style,
   ...props
 }: ButtonProps) => {
   const sizes = {
@@ -21,7 +38,7 @@ export const Button = ({
   };
 
   const base =
-    'inline-flex items-center gap-2 font-semibold rounded-lg transition-all duration-200 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60';
+    'inline-flex items-center gap-2 font-semibold rounded-lg transition-all duration-200 cursor-pointer border-0 outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 no-underline';
 
   const variants = {
     primary:
@@ -30,15 +47,30 @@ export const Button = ({
       'bg-transparent text-white border border-white/[0.14] hover:bg-white/[0.05] hover:border-blue-400/40',
   };
 
+  const combinedClassName = `${base} ${sizes[size]} ${variants[variant]} ${className}`;
+  const combinedStyle =
+    variant === 'primary'
+      ? { background: 'linear-gradient(135deg, #4d8eff 0%, #9b59ff 100%)', ...style }
+      : style;
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        className={combinedClassName}
+        style={combinedStyle}
+        {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
+      >
+        {children}
+      </a>
+    );
+  }
+
   return (
     <button
-      className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
-      style={
-        variant === 'primary'
-          ? { background: 'linear-gradient(135deg, #4d8eff 0%, #9b59ff 100%)' }
-          : undefined
-      }
-      {...props}
+      className={combinedClassName}
+      style={combinedStyle}
+      {...(props as React.ButtonHTMLAttributes<HTMLButtonElement>)}
     >
       {children}
     </button>
