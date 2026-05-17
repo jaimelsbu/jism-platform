@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  /* Surface colors from DESIGN.md */
-  --color-background: #131314;
+  /* ── Surfaces ── */
+  --color-background: #0d0d0f;
   --color-surface: #131314;
   --color-surface-dim: #131314;
   --color-surface-bright: #3a393a;
@@ -12,57 +12,251 @@
   --color-surface-container-high: #2a2a2b;
   --color-surface-container-highest: #353436;
 
-  /* Accents & Gradients */
-  --color-primary: #adc6ff;
-  --color-primary-container: #4d8eff;
-  --color-secondary: #ddb7ff;
+  /* ── Brand accents ── */
+  --color-primary: #6ea8fe;
+  --color-primary-container: #3b7de8;
+  --color-secondary: #b98fff;
   --color-secondary-container: #6f00be;
   --color-tertiary: #ffb786;
 
-  /* Shapes & Rounding */
+  /* ── Text ── */
+  --color-on-surface: #e5e2e3;
+  --color-on-surface-variant: #9ca3b0;
+
+  /* ── Borders ── */
+  --color-outline: #8c909f;
+  --color-outline-variant: #424754;
+
+  /* ── Shapes ── */
   --radius-sm: 0.25rem;
   --radius-DEFAULT: 0.5rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
   --radius-2xl: 2rem;
+
+  /* ── Fonts ── */
+  --font-geist: var(--font-geist-sans), 'Geist', system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), 'JetBrains Mono', monospace;
 }
 
-:root {
-  color-scheme: dark;
+/* ── Base reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: var(--color-background);
-  color: #e5e2e3;
-  overflow-x: hidden;
+  color: var(--color-on-surface);
+  font-family: var(--font-geist);
+  /* CRITICAL: overflow-x hidden must be on a wrapper, NOT body — body overflow:hidden kills scroll */
+  overflow-x: clip;
+  min-height: 100vh;
 }
 
-/* Reusable UI Utility classes */
+/* ── Gradient definitions (used via inline style or utility) ── */
+:root {
+  --gradient-brand: linear-gradient(135deg, #6ea8fe 0%, #b98fff 100%);
+  --gradient-brand-vivid: linear-gradient(135deg, #4d8eff 0%, #9b59ff 100%);
+  --gradient-brand-text: linear-gradient(120deg, #7fb8ff 0%, #c4a0ff 60%, #ff9f6b 100%);
+  --glow-primary: rgba(110, 168, 254, 0.18);
+  --glow-secondary: rgba(185, 143, 255, 0.12);
+}
+
+/* ── Reusable component classes ── */
+
+.jims-card {
+  background-color: var(--color-surface-container-low);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-xl);
+  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+.jims-card:hover {
+  border-color: rgba(110, 168, 254, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(110, 168, 254, 0.08);
+}
+
+/* Legacy alias for existing components */
 .stitch-card {
   background-color: var(--color-surface-container-low);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: var(--radius-xl);
   transition: all 0.3s ease;
 }
 
 .stitch-glass {
-  background-color: rgba(32, 31, 32, 0.6);
+  background-color: rgba(28, 27, 28, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-2xl);
 }
 
+/* Glow orbs - positioned by parent using top/left/right/bottom utilities */
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.glow-orb-blue {
+  background: radial-gradient(circle, rgba(78, 140, 255, 0.22) 0%, transparent 70%);
+}
+.glow-orb-purple {
+  background: radial-gradient(circle, rgba(155, 89, 255, 0.16) 0%, transparent 70%);
+}
+.glow-orb-orange {
+  background: radial-gradient(circle, rgba(255, 150, 80, 0.1) 0%, transparent 70%);
+}
+
+/* Legacy - keep working */
 .glow-bg {
   position: absolute;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(77, 142, 255, 0.15) 0%, rgba(111, 0, 190, 0.05) 50%, transparent 100%);
-  filter: blur(60px);
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(78, 140, 255, 0.14) 0%, rgba(155, 89, 255, 0.06) 50%, transparent 100%);
+  filter: blur(70px);
   pointer-events: none;
 }
 
-.bg-brand-gradient {
-  background: linear-gradient(135deg, #adc6ff 0%, #ddb7ff 100%);
+/* ── Gradient text utility ── */
+.gradient-text {
+  background: var(--gradient-brand-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
+
+/* ── bg-brand-gradient: used both as button BG and bg-clip-text ── */
+.bg-brand-gradient {
+  background: var(--gradient-brand);
+}
+
+/* ── Buttons ── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background: var(--gradient-brand-vivid);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, box-shadow 0.3s;
+  letter-spacing: 0.01em;
+}
+.btn-primary:hover {
+  opacity: 0.92;
+  box-shadow: 0 0 24px rgba(78, 140, 255, 0.45);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background: transparent;
+  color: var(--color-on-surface);
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(110, 168, 254, 0.4);
+}
+
+/* ── Trust badge pill ── */
+.trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem;
+  background: rgba(110, 168, 254, 0.08);
+  border: 1px solid rgba(110, 168, 254, 0.2);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+/* ── Section label ── */
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  opacity: 0.8;
+}
+
+/* ── Divider ── */
+.section-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin: 0;
+}
+
+/* ── Pricing accent ── */
+.price-tag {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.price-tag sup {
+  font-size: 1rem;
+  font-weight: 600;
+  vertical-align: super;
+  opacity: 0.7;
+}
+
+/* ── Anchor offset for sticky nav ── */
+section[id] {
+  scroll-margin-top: 80px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-surface-container-lowest); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ── Animations ── */
+@keyframes float-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.animate-float-up { animation: float-up 0.6s ease forwards; }
+.animate-pulse-dot { animation: pulse-dot 1.8s ease-in-out infinite; }
+.animate-spin-slow { animation: spin-slow 3s linear infinite; }
+
+/* Staggered children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 80ms; }
+.stagger > *:nth-child(3) { animation-delay: 160ms; }
+.stagger > *:nth-child(4) { animation-delay: 240ms; }
+.stagger > *:nth-child(5) { animation-delay: 320ms; }
