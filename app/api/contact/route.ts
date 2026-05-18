@@ -2,12 +2,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
+// ── Change this to your email ──────────────────────────────────────────────
 const TO_EMAIL = 'jachircano@yahoo.com';
-const FROM_EMAIL = 'JIMS Contact <onboarding@resend.dev>'; // use this until you verify your domain
+const FROM_EMAIL = 'JIMS Contact <onboarding@resend.dev>';
+// ──────────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  // Guard: fail gracefully if env var missing
+  if (!process.env.RESEND_API_KEY) {
+    return NextResponse.json(
+      { error: 'Email service not configured.' },
+      { status: 500 }
+    );
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     const body = await req.json();
     const { name, email, projectType, message } = body;
@@ -39,7 +48,7 @@ export async function POST(req: NextRequest) {
               New Project Inquiry
             </h1>
             <p style="margin: 6px 0 0; font-size: 13px; color: rgba(255,255,255,0.75);">
-              Received via jism-platform.vercel.app
+              Received via vektorq.com
             </p>
           </div>
 
