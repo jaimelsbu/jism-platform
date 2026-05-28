@@ -1,4 +1,7 @@
+'use client';
+
 // app/page.tsx
+import { useState } from 'react';
 import { Hero } from './components/Hero';
 import { PlatformInsights } from './components/PlatformInsights';
 import { JimsLogo } from './components/JimsLogo';
@@ -93,6 +96,8 @@ const trustStats = [
 const stack = ['Next.js', 'TypeScript', 'Python', 'AWS', 'PostgreSQL', 'OpenAI', 'Docker', 'Vercel'];
 
 export default function Home() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <main
       className="min-h-screen"
@@ -111,6 +116,8 @@ export default function Home() {
       >
         <div className="max-w-[1280px] mx-auto px-6 py-4 flex justify-between items-center">
           <JimsLogo size={34} showText />
+          
+          {/* Desktop Nav links */}
           <div
             className="hidden md:flex items-center gap-8 text-sm"
             style={{ color: 'var(--color-on-surface-variant)' }}
@@ -130,23 +137,63 @@ export default function Home() {
               </a>
             ))}
           </div>
+
           <div className="hidden md:block">
             <Button variant="primary" size="sm" href="#contact">
               Book Free Call
             </Button>
           </div>
+
+          {/* Premium Mobile Menu Toggle Button (Sized perfectly for mobile thumbs) */}
           <button
-            className="md:hidden text-xl"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--color-on-surface-variant)',
-              cursor: 'pointer',
-            }}
-            aria-label="Open menu"
+            className="md:hidden p-2 -mr-2 text-white transition-colors focus:outline-none"
+            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
           >
-            ☰
+            {mobileMenuOpen ? (
+              // Modern Sleek "X" Close SVG
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              // Modern Sleek Hamburger Menu SVG
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
           </button>
+        </div>
+
+        {/* ── MOBILE MENU DRAWER CONTAINER ── */}
+        <div
+          className={`md:hidden fixed left-0 w-full bg-[#0d0d0f]/98 backdrop-blur-xl border-b border-white/5 transition-all duration-300 cubic-bezier(0.4, 0, 0.2, 1) overflow-hidden ${
+            mobileMenuOpen ? 'max-h-[340px] opacity-100 visibility-visible' : 'max-h-0 opacity-0 visibility-hidden pointer-events-none'
+          }`}
+          style={{ top: '69px' }}
+        >
+          <div className="flex flex-col gap-4 px-6 py-6 font-medium text-[15px]">
+            {[
+              { label: '✨ Services', id: 'services' },
+              { label: '📈 How It Works', id: 'how-it-works' },
+              { label: '🤝 Who We Help', id: 'industries' },
+              { label: '📞 Contact Us', id: 'contact' },
+            ].map(({ label, id }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 transition-colors text-white/70 hover:text-white"
+              >
+                {label}
+              </a>
+            ))}
+            <div className="pt-2">
+              <Button variant="primary" size="lg" href="#contact" className="w-full text-center" onClick={() => setMobileMenuOpen(false)}>
+                Book Free Call
+              </Button>
+            </div>
+          </div>
         </div>
       </nav>
 
