@@ -1,6 +1,6 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script"; 
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,6 +32,21 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Script de tracking adaptado para Next.js */}
+        <Script id="vektorq-tracker" strategy="afterInteractive">
+          {`
+            (function(j,i,m,s){
+              j._jimsConfig = { projectId: "vektorq-main" }; 
+              var a = i.createElement(m);
+              var b = i.getElementsByTagName(m)[0];
+              a.async = 1;
+              a.src = s;
+              b.parentNode.insertBefore(a, b);
+            })(window, document, "script", "https://vektorq.com/api/tracker.js");
+          `}
+        </Script>
+      </head>
       {/*
         IMPORTANT: Do NOT put overflow-hidden on body — it prevents vertical scroll.
         overflow-x:clip is set in globals.css on body instead.
