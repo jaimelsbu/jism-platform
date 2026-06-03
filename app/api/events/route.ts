@@ -1,68 +1,82 @@
-// app/api/events/route.ts
-// Receives tracker events from client websites and stores in Vercel Postgres
-import { NextRequest, NextResponse } from 'next/server';
-import { sql } from '@vercel/postgres';
+// /Users/jaimehernan/jism-platform/app/api/events/route.ts
+import { NextResponse } from 'next/server';
+import { neon } from '@neondatabase/serverless';
 
-// Allow requests from any origin (clients embed tracker on their own sites)
-const CORS = {
-  'Access-Control-Allow-Origin':  '*',
+// Permite peticiones desde cualquier origen (necesario para que los clientes envíen eventos)
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+// Manejo de peticiones preflight OPTIONS
 export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS });
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    let body: Record<string, unknown>;
+    const payload = await request.json();
 
-    try {
-      body = await req.json();
-    } catch {
-      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400, headers: CORS });
+    // Tracker v2.0 envia estos campos estructurados
+    const {
+      siteId,
+      sessionId,
+      pageId,
+      type,
+      url,
+      device,
+      ts,
+      meta,
+    } = payload;
+
+    if (!siteId || !type) {
+      return new NextResponse('Missing required fields', { status: 400, headers: CORS_HEADERS });
     }
 
-    const { siteId, sessionId, pageId, type, url, device, ts, meta } = body as {
-      siteId:    string;
-      sessionId: string;
-      pageId:    string;
-      type:      string;
-      url:       string;
-      device:    string;
-      ts:        number;
-      meta:      Record<string, unknown>;
-    };
+    const sql = neon(process.env.DATABASE_URL!);
 
-    // Basic validation
-    if (!siteId || !sessionId || !type) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: CORS });
-    }
-
-    // Sanitize
-    const safeSiteId    = String(siteId).slice(0, 100);
-    const safeSessionId = String(sessionId).slice(0, 100);
-    const safePageId    = String(pageId || '').slice(0, 100);
-    const safeType      = String(type).slice(0, 50);
-    const safeUrl       = String(url || '').slice(0, 500);
-    const safeDevice    = String(device || 'unknown').slice(0, 20);
-    const safeTs        = typeof ts === 'number' ? ts : Date.now();
-    const safeMeta      = meta && typeof meta === 'object' ? meta : {};
-
-    await sql`
-      INSERT INTO vek_events
-        (site_id, session_id, page_id, type, url, device, ts, meta)
-      VALUES
-        (${safeSiteId}, ${safeSessionId}, ${safePageId}, ${safeType},
-         ${safeUrl}, ${safeDevice}, ${safeTs}, ${JSON.stringify(safeMeta)})
+    // 1. Validar si el sitio existe en Neon
+    const sites = await sql`
+      SELECT id, domain, plan, trial_ends
+      FROM vek_sites
+      WHERE id = ${siteId}
+      LIMIT 1
     `;
 
-    return NextResponse.json({ ok: true }, { headers: CORS });
+    const site = sites[0];
+    if (!site) {
+      return new NextResponse('Site not found', { status: 404, headers: CORS_HEADERS });
+    }
 
-  } catch (err) {
-    console.error('[events API]', err);
-    // Always return 200 to tracker — don't break client sites on DB errors
-    return NextResponse.json({ ok: true, warn: 'stored_failed' }, { headers: CORS });
+    // 2. Validación de Dominio (Se salta en localhost/desarrollo)
+    const origin = request.headers.get('origin') || request.headers.get('referer') || '';
+    const isDev = origin.includes('localhost') || origin.includes('127.0.0.1');
+
+    if (!isDev && !origin.includes(site.domain)) {
+      return new NextResponse('Unauthorized domain', { status: 403, headers: CORS_HEADERS });
+    }
+
+    // 3. Insertar el evento mapeando to_timestamp de forma segura para Neon
+    await sql`
+      INSERT INTO vek_events (site_id, session_id, page_id, type, url, device, ts, meta)
+      VALUES (
+        ${siteId},
+        ${sessionId || null},
+        ${pageId   || null},
+        ${type},
+        ${url      || null},
+        ${device   || null},
+        to_timestamp(${(ts || Date.now()) / 1000}),
+        ${JSON.stringify(meta || {})}
+      )
+    `;
+
+    return NextResponse.json({ ok: true }, { headers: CORS_HEADERS });
+
+  } catch (error) {
+    console.error('[vektorq/events]', error);
+    // Respondemos con éxito simulado para no romper la ejecución de la web del cliente si falla Neon
+    return NextResponse.json({ ok: true, warn: 'ingest_error' }, { headers: CORS_HEADERS });
   }
 }
