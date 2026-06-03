@@ -40,13 +40,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        {/* Modern Next.js Script Integration for VEKTORQ Ingestion Engine */}
         <Script
-          src="/vektorq-tracker.js"
+          id="vektorq-tracker"
+          src="https://vektorq.com/vektorq-tracker.js"
           strategy="afterInteractive"
           data-site-id="vektorq-main"
-          data-debug="true"
           data-endpoint="https://vektorq.com/api/events"
+          data-debug="true"
         />
       </head>
       <body className="min-h-full flex flex-col">{children}</body>
