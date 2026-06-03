@@ -48,8 +48,6 @@ export async function initDb() {
 
 // ── Query helpers ─────────────────────────────────────────────────────────────
 
-// /Users/jaimehernan/jism-platform/lib/db.ts (Sección de Helpers)
-
 export async function getOverview(siteId: string, days = 30) {
   const rows = await sql`
     SELECT
