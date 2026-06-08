@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         ${type},
         ${url      || null},
         ${device   || null},
-        to_timestamp(${(ts || Date.now()) / 1000}),
+        ${ts || Date.now()},
         ${JSON.stringify(meta || {})}
       )
     `;
